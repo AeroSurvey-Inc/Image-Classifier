@@ -61,7 +61,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Create build output directory
-$buildDir = ".\build"
+$buildDir = '.\build'
 if (Test-Path $buildDir) {
     Write-Host "`nCleaning previous build..." -ForegroundColor Yellow
     Remove-Item $buildDir -Recurse -Force
@@ -117,10 +117,10 @@ exe = EXE(
 )
 "@
 
-$specFile | Out-File -FilePath "build_spec.spec" -Encoding UTF8
+$specFile | Out-File -FilePath 'build_spec.spec' -Encoding UTF8
 
 # Run PyInstaller
-& uv run pyinstaller --clean --noconfirm build_spec.spec
+& uv run pyinstaller --clean --noconfirm 'build_spec.spec'
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Failed to build executable." -ForegroundColor Red
@@ -130,7 +130,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "`n✓ Build completed successfully!" -ForegroundColor Green
 
 # Check if exe was created
-$exePath = ".\dist\ImageClassifier.exe"
+$exePath = '.\dist\ImageClassifier.exe'
 if (Test-Path $exePath) {
     $exeSize = (Get-Item $exePath).Length / 1MB
     Write-Host "Executable created: $exePath" -ForegroundColor Green
@@ -143,7 +143,7 @@ else {
 }
 
 # Cleanup spec file
-Remove-Item "build_spec.spec" -Force
+Remove-Item 'build_spec.spec' -Force
 
 Write-Host ""
 Write-Host 'Build complete! Run with: .\dist\ImageClassifier.exe' -ForegroundColor Green
