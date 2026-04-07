@@ -20,11 +20,11 @@ Write-Host ""
 
 # Check if uv is installed
 Write-Host -ForegroundColor Yellow "Checking for uv package manager..."
-$uvPath = & where.exe uv 2>$null
+$uvPath = where.exe uv 2>$null
 if (-not $uvPath) {
     Write-Host -ForegroundColor Yellow "uv not found. Installing uv..."
     powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-    $uvPath = & where.exe uv 2>$null
+    $uvPath = where.exe uv 2>$null
     if (-not $uvPath) {
         Write-Host -ForegroundColor Red "Failed to install uv. Please install manually from https://astral.sh/uv"
         exit 1
