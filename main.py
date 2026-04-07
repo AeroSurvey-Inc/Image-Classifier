@@ -138,9 +138,13 @@ def draw_labeled_image(img: Image.Image, label: str, placement: str) -> Image.Im
     raise ValueError(f"Unsupported placement: {placement}")
 
 
-def process_image(path: Path, label: str, placement: str, output_dir: Path) -> Path:
+def process_image(
+    path: Path, label: str, placements: list[str], output_dir: Path
+) -> Path:
     with Image.open(path) as img:
-        rendered = draw_labeled_image(img, label, placement)
+        rendered = img.convert("RGB")
+        for placement in placements:
+            rendered = draw_labeled_image(rendered, label, placement)
         output = output_path_for(path, output_dir)
         save_kwargs = (
             {"quality": 95} if path.suffix.lower() in {".jpg", ".jpeg"} else {}
@@ -158,7 +162,7 @@ class ImageClassifierApp:
 
         self.image_paths: list[Path] = []
         self.label_text: str = ""
-        self.placement: str = ""
+        self.placements: list[str] = []
         self.output_dir: Path | None = None
 
         self.state = "select_images"
@@ -275,45 +279,51 @@ class ImageClassifierApp:
         frame.pack(fill="both", expand=True)
 
         tk.Label(
-            frame, text="Step 3: Choose Label Placement", font=("Arial", 14, "bold")
+            frame,
+            text="Step 3: Choose Label Placement(s)",
+            font=("Arial", 14, "bold"),
         ).pack(anchor="w", pady=(0, 16))
 
-        def set_placement(p: str) -> None:
-            self.placement = p
+        placement_options = [
+            ("overlay_top", "Overlay at top"),
+            ("overlay_bottom", "Overlay at bottom"),
+            ("append_top", "Append at top"),
+            ("append_bottom", "Append at bottom"),
+        ]
+
+        selected_vars: dict[str, tk.BooleanVar] = {}
+        selected_set = set(self.placements)
+
+        for key, label in placement_options:
+            var = tk.BooleanVar(value=key in selected_set)
+            selected_vars[key] = var
+            tk.Checkbutton(
+                frame,
+                text=label,
+                variable=var,
+                anchor="w",
+                font=("Arial", 11),
+            ).pack(fill="x", pady=2)
+
+        def on_next() -> None:
+            chosen = [key for key, _ in placement_options if selected_vars[key].get()]
+            if not chosen:
+                messagebox.showwarning(
+                    "No Placement Selected",
+                    "Please select at least one placement option.",
+                )
+                return
+            self.placements = chosen
             self.state = "choose_output"
             self.draw_ui()
 
         tk.Button(
             frame,
-            text="Overlay at top",
+            text="Next",
             width=40,
             height=2,
-            command=lambda: set_placement("overlay_top"),
-        ).pack(fill="x", pady=4)
-
-        tk.Button(
-            frame,
-            text="Overlay at bottom",
-            width=40,
-            height=2,
-            command=lambda: set_placement("overlay_bottom"),
-        ).pack(fill="x", pady=4)
-
-        tk.Button(
-            frame,
-            text="Append at top",
-            width=40,
-            height=2,
-            command=lambda: set_placement("append_top"),
-        ).pack(fill="x", pady=4)
-
-        tk.Button(
-            frame,
-            text="Append at bottom",
-            width=40,
-            height=2,
-            command=lambda: set_placement("append_bottom"),
-        ).pack(fill="x", pady=4)
+            command=on_next,
+        ).pack(fill="x", pady=8)
 
         tk.Button(frame, text="Back", width=40, height=1, command=self.go_back).pack(
             fill="x", pady=8
@@ -369,12 +379,14 @@ class ImageClassifierApp:
 
         for path in self.image_paths:
             try:
-                process_image(path, self.label_text, self.placement, self.output_dir)
+                process_image(path, self.label_text, self.placements, self.output_dir)
                 success += 1
             except Exception as exc:
                 failures.append(f"{path.name}: {exc}")
 
         summary_lines = [f"Processed: {success}/{len(self.image_paths)} image(s)"]
+        summary_lines.append(f"Placements per image: {len(self.placements)}")
+        summary_lines.append(f"Outputs created: {success}")
         summary_lines.append(f"Output folder: {self.output_dir}")
         if failures:
             summary_lines.append("\nFailed:")
@@ -385,7 +397,7 @@ class ImageClassifierApp:
         self.state = "select_images"
         self.image_paths = []
         self.label_text = ""
-        self.placement = ""
+        self.placements = []
         self.output_dir = None
         self.draw_ui()
 
