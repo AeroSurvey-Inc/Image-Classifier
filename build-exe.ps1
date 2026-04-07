@@ -14,61 +14,69 @@
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "Image Classifier Tool - EXE Builder" -ForegroundColor Cyan
-Write-Host "====================================`n" -ForegroundColor Cyan
+Write-Host -ForegroundColor Cyan "Image Classifier Tool - EXE Builder"
+Write-Host -ForegroundColor Cyan "===================================="
+Write-Host ""
 
 # Check if uv is installed
-Write-Host "Checking for uv package manager..." -ForegroundColor Yellow
+Write-Host -ForegroundColor Yellow "Checking for uv package manager..."
 $uvPath = & where.exe uv 2>$null
 if (-not $uvPath) {
-    Write-Host "uv not found. Installing uv..." -ForegroundColor Yellow
+    Write-Host -ForegroundColor Yellow "uv not found. Installing uv..."
     powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
     $uvPath = & where.exe uv 2>$null
     if (-not $uvPath) {
-        Write-Host "Failed to install uv. Please install manually from https://astral.sh/uv" -ForegroundColor Red
+        Write-Host -ForegroundColor Red "Failed to install uv. Please install manually from https://astral.sh/uv"
         exit 1
     }
-    Write-Host "uv installed successfully." -ForegroundColor Green
+    Write-Host -ForegroundColor Green "uv installed successfully."
 }
 else {
-    Write-Host "uv found at: $uvPath" -ForegroundColor Green
+    Write-Host -ForegroundColor Green ("uv found at: " + $uvPath)
 }
 
 # Sync dependencies using uv
-Write-Host "`nSyncing project dependencies..." -ForegroundColor Yellow
+Write-Host ""
+Write-Host -ForegroundColor Yellow "Syncing project dependencies..."
 & uv sync
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to sync dependencies." -ForegroundColor Red
+    Write-Host -ForegroundColor Red "Failed to sync dependencies."
     exit 1
 }
-Write-Host "Dependencies synced successfully." -ForegroundColor Green
+Write-Host -ForegroundColor Green "Dependencies synced successfully."
 
 # Add PyInstaller to the project
-Write-Host "`nAdding PyInstaller to project..." -ForegroundColor Yellow
+Write-Host ""
+Write-Host -ForegroundColor Yellow "Adding PyInstaller to project..."
 & uv add --dev pyinstaller
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to add PyInstaller." -ForegroundColor Red
+    Write-Host -ForegroundColor Red "Failed to add PyInstaller."
     exit 1
 }
-Write-Host "PyInstaller added successfully." -ForegroundColor Green
+Write-Host -ForegroundColor Green "PyInstaller added successfully."
 
 # Sync again to include PyInstaller
-Write-Host "`nSyncing updated dependencies..." -ForegroundColor Yellow
+Write-Host ""
+Write-Host -ForegroundColor Yellow "Syncing updated dependencies..."
 & uv sync
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to sync updated dependencies." -ForegroundColor Red
+    Write-Host -ForegroundColor Red "Failed to sync updated dependencies."
     exit 1
 }
 
 # Create build output directory
 $buildDir = '.\build'
 if (Test-Path $buildDir) {
-    Write-Host "`nCleaning previous build..." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host -ForegroundColor Yellow "Cleaning previous build..."
     Remove-Item $buildDir -Recurse -Force
 }
 
-Write-Host "`nBuilding standalone executable..." -ForegroundColor Yellow
-$specFile = @"
+Write-Host ""
+Write-Host -ForegroundColor Yellow "Building standalone executable..."
+
+# Create PyInstaller spec file
+$specContent = @'
 # -*- mode: python ; coding: utf-8 -*-
 import sys
 from pathlib import Path
@@ -115,30 +123,32 @@ exe = EXE(
     entitlements_file=None,
     icon='icon.ico' if __import__('pathlib').Path('icon.ico').exists() else None,
 )
-"@
+'@
 
-$specFile | Out-File -FilePath 'build_spec.spec' -Encoding UTF8
+$specContent | Out-File -FilePath 'build_spec.spec' -Encoding UTF8
 
 # Run PyInstaller
 & uv run pyinstaller --clean --noconfirm 'build_spec.spec'
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to build executable." -ForegroundColor Red
+    Write-Host -ForegroundColor Red "Failed to build executable."
     exit 1
 }
 
-Write-Host "`n✓ Build completed successfully!" -ForegroundColor Green
+Write-Host ""
+Write-Host -ForegroundColor Green "Build completed successfully!"
 
 # Check if exe was created
 $exePath = '.\dist\ImageClassifier.exe'
 if (Test-Path $exePath) {
     $exeSize = (Get-Item $exePath).Length / 1MB
-    Write-Host "Executable created: $exePath" -ForegroundColor Green
-    Write-Host "Size: $([Math]::Round($exeSize, 2)) MB" -ForegroundColor Green
-    Write-Host "`nYou can now distribute the exe file or the entire 'dist' folder." -ForegroundColor Cyan
+    Write-Host -ForegroundColor Green ('Executable created: ' + $exePath)
+    Write-Host -ForegroundColor Green ('Size: ' + [Math]::Round($exeSize, 2) + ' MB')
+    Write-Host ""
+    Write-Host -ForegroundColor Cyan "You can now distribute the exe file or the entire dist folder."
 }
 else {
-    Write-Host "Executable not found at expected path." -ForegroundColor Red
+    Write-Host -ForegroundColor Red "Executable not found at expected path."
     exit 1
 }
 
@@ -146,4 +156,4 @@ else {
 Remove-Item 'build_spec.spec' -Force
 
 Write-Host ""
-Write-Host 'Build complete! Run with: .\dist\ImageClassifier.exe' -ForegroundColor Green
+Write-Host -ForegroundColor Green "Build complete! Run with: .\dist\ImageClassifier.exe"
