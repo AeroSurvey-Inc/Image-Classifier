@@ -145,4 +145,5 @@ else {
 # Cleanup spec file
 Remove-Item "build_spec.spec" -Force
 
-Write-Host "`nBuild complete! Run with: .\dist\ImageClassifier.exe" -ForegroundColor Green
+Write-Host ""
+Write-Host "Build complete! Run with: .\dist\ImageClassifier.exe" -ForegroundColor Green
