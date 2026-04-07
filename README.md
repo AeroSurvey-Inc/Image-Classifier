@@ -62,13 +62,3 @@ uv run main.py
 
 Processed images are written to the selected output folder with `_labeled` added to the filename.
 If that filename already exists, a numeric suffix is added (for example `_labeled_1`).
-
-## Windows Defender & Code Signing
-
-The built EXE is unsigned (no code signing certificate). If Windows Defender flags it on first run:
-
-1. Click **More info** → **Run anyway**
-2. Or add the application to your antivirus exclusion list
-3. Or run `build-exe.ps1` yourself to verify the source code
-
-Since you're building locally from source, the exe is safe and you can verify the source code before building.
