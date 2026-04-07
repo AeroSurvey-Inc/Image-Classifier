@@ -20,19 +20,19 @@ Write-Host ""
 
 # Check if uv is installed
 Write-Host -ForegroundColor Yellow "Checking for uv package manager..."
-$uvPath = where.exe uv 2>$null
-if (-not $uvPath) {
+$uvCommand = Get-Command uv -ErrorAction SilentlyContinue
+if (-not $uvCommand) {
     Write-Host -ForegroundColor Yellow "uv not found. Installing uv..."
     powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-    $uvPath = where.exe uv 2>$null
-    if (-not $uvPath) {
+    $uvCommand = Get-Command uv -ErrorAction SilentlyContinue
+    if (-not $uvCommand) {
         Write-Host -ForegroundColor Red "Failed to install uv. Please install manually from https://astral.sh/uv"
         exit 1
     }
     Write-Host -ForegroundColor Green "uv installed successfully."
 }
 else {
-    Write-Host -ForegroundColor Green ("uv found at: " + $uvPath)
+    Write-Host -ForegroundColor Green ("uv found at: " + $uvCommand.Source)
 }
 
 # Sync dependencies using uv
