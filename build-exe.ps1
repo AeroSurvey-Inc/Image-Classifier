@@ -24,6 +24,13 @@ $uvCommand = Get-Command uv -ErrorAction SilentlyContinue
 if (-not $uvCommand) {
     Write-Host -ForegroundColor Yellow "uv not found. Installing uv..."
     powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+    
+    # Add uv installation directory to PATH
+    $uvPath = "$env:USERPROFILE\.local\bin"
+    if (Test-Path $uvPath) {
+        $env:Path = "$uvPath;$env:Path"
+    }
+    
     $uvCommand = Get-Command uv -ErrorAction SilentlyContinue
     if (-not $uvCommand) {
         Write-Host -ForegroundColor Red "Failed to install uv. Please install manually from https://astral.sh/uv"
