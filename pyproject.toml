@@ -1,0 +1,25 @@
+[project]
+name = "image-classifier-tool"
+version = "0.1.0"
+description = "Interactive image labeling tool with overlay or append placement"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = ["pillow>=12.2.0"]
+
+[project.scripts]
+image-classifier = "main:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv]
+package = true
+
+[tool.setuptools]
+py-modules = ["main"]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.19.0",
+]
