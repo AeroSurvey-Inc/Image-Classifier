@@ -1,3 +1,5 @@
+"""Tkinter-based image classification labeler with configurable placement options."""
+
 from __future__ import annotations
 
 import sys
@@ -31,12 +33,14 @@ APP_ICON_FILE = "aerosurvey-mark-8-icon.ico"
 
 
 def resource_path(relative_name: str) -> Path:
+    """Return an absolute path for resources in source and PyInstaller builds."""
     if hasattr(sys, "_MEIPASS"):
         return Path(sys._MEIPASS) / relative_name
     return Path(__file__).resolve().parent / relative_name
 
 
 def load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    """Load Arial at the requested size, or fall back to Pillow's default font."""
     try:
         return ImageFont.truetype("arial.ttf", size=size)
     except OSError:
@@ -46,6 +50,7 @@ def load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
 def text_size(
     text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont
 ) -> tuple[int, int]:
+    """Measure rendered text width and height in pixels for the provided font."""
     probe = Image.new("RGB", (10, 10), "white")
     draw = ImageDraw.Draw(probe)
     bbox = draw.textbbox((0, 0), text, font=font)
@@ -55,6 +60,7 @@ def text_size(
 def pick_contrasting_text_color(
     img: Image.Image, x: int, y: int, w: int, h: int, pad: int
 ) -> tuple[int, int, int]:
+    """Choose black or white text based on luminance near the target region."""
     x0 = max(0, x - pad)
     y0 = max(0, y - pad)
     x1 = min(img.width, x + w + pad)
@@ -67,6 +73,7 @@ def pick_contrasting_text_color(
 
 
 def collect_images_from_folder(folder: Path) -> list[Path]:
+    """Recursively collect supported image files from a folder."""
     return sorted(
         [
             p
@@ -77,6 +84,7 @@ def collect_images_from_folder(folder: Path) -> list[Path]:
 
 
 def output_path_for(source_path: Path, output_dir: Path) -> Path:
+    """Build a non-conflicting output filename in the target directory."""
     base = output_dir / f"{source_path.stem}_labeled{source_path.suffix}"
     if not base.exists():
         return base
@@ -92,6 +100,7 @@ def output_path_for(source_path: Path, output_dir: Path) -> Path:
 
 
 def draw_labeled_image(img: Image.Image, label: str, placement: str) -> Image.Image:
+    """Render a label on an image using the requested placement mode."""
     working = img.convert("RGB")
     padding = max(8, int(working.height * 0.015))
 
@@ -159,6 +168,7 @@ def draw_labeled_image(img: Image.Image, label: str, placement: str) -> Image.Im
 def process_image(
     path: Path, label: str, placements: list[str], output_dir: Path
 ) -> Path:
+    """Apply one or more placements to an image and save the final output."""
     with Image.open(path) as img:
         rendered = img.convert("RGB")
         for placement in placements:
@@ -172,7 +182,10 @@ def process_image(
 
 
 class ImageClassifierApp:
+    """State-driven Tkinter UI for selecting images, labels, and output settings."""
+
     def __init__(self, root: tk.Tk):
+        """Initialize window settings, app state, and first UI screen."""
         self.root = root
         self.root.title("Image Classifier Tool")
         self.root.geometry("520x520")
@@ -194,10 +207,12 @@ class ImageClassifierApp:
         self.draw_ui()
 
     def clear_ui(self) -> None:
+        """Remove all widgets from the root window before drawing a new screen."""
         for widget in self.root.winfo_children():
             widget.destroy()
 
     def draw_ui(self) -> None:
+        """Render the active screen based on the current application state."""
         self.clear_ui()
 
         if self.state == "select_images":
@@ -212,6 +227,7 @@ class ImageClassifierApp:
             self.draw_processing()
 
     def draw_select_images(self) -> None:
+        """Render Step 1 controls for choosing files or a source folder."""
         frame = tk.Frame(self.root, padx=20, pady=20)
         frame.pack(fill="both", expand=True)
 
@@ -240,6 +256,7 @@ class ImageClassifierApp:
         ).pack(fill="x", pady=8)
 
     def on_select_files(self) -> None:
+        """Handle file selection and move to the label entry step."""
         files = filedialog.askopenfilenames(
             title="Select Image Files",
             filetypes=[
@@ -252,6 +269,7 @@ class ImageClassifierApp:
             self.draw_ui()
 
     def on_select_folder(self) -> None:
+        """Handle folder selection, gather images, and continue when valid."""
         folder = filedialog.askdirectory(title="Select Folder of Images")
         if folder:
             self.image_paths = collect_images_from_folder(Path(folder))
@@ -264,6 +282,7 @@ class ImageClassifierApp:
             self.draw_ui()
 
     def draw_enter_label(self) -> None:
+        """Render Step 2 with preset buttons and editable custom label input."""
         frame = tk.Frame(self.root, padx=20, pady=20)
         frame.pack(fill="both", expand=True)
 
@@ -286,6 +305,7 @@ class ImageClassifierApp:
         entry.focus()
 
         def use_preset(label: str) -> None:
+            """Populate the label entry field with a selected preset value."""
             entry.delete(0, tk.END)
             entry.insert(0, label)
             entry.focus()
@@ -302,6 +322,7 @@ class ImageClassifierApp:
         preset_frame.grid_columnconfigure(1, weight=1)
 
         def on_next() -> None:
+            """Validate label text and advance to placement selection."""
             text = entry.get().strip()
             if not text:
                 messagebox.showwarning("Empty Label", "Please enter a label.")
@@ -323,6 +344,7 @@ class ImageClassifierApp:
         )
 
     def draw_choose_placement(self) -> None:
+        """Render Step 3 to choose one or more label placement options."""
         frame = tk.Frame(self.root, padx=20, pady=20)
         frame.pack(fill="both", expand=True)
 
@@ -354,6 +376,7 @@ class ImageClassifierApp:
             ).pack(fill="x", pady=2)
 
         def on_next() -> None:
+            """Require at least one placement and continue to output selection."""
             chosen = [key for key, _ in placement_options if selected_vars[key].get()]
             if not chosen:
                 messagebox.showwarning(
@@ -378,6 +401,7 @@ class ImageClassifierApp:
         )
 
     def draw_choose_output(self) -> None:
+        """Render Step 4 for output folder selection and processing start."""
         frame = tk.Frame(self.root, padx=20, pady=20)
         frame.pack(fill="both", expand=True)
 
@@ -391,6 +415,7 @@ class ImageClassifierApp:
             )
 
         def on_browse() -> None:
+            """Open folder picker and store the selected output directory."""
             folder = filedialog.askdirectory(
                 title="Select Output Folder",
                 initialdir=str(self.image_paths[0].parent) if self.image_paths else "",
@@ -418,6 +443,7 @@ class ImageClassifierApp:
         )
 
     def on_process(self) -> None:
+        """Process selected images and report completion summary to the user."""
         self.state = "processing"
         self.draw_ui()
         self.root.update()
@@ -450,6 +476,7 @@ class ImageClassifierApp:
         self.draw_ui()
 
     def draw_processing(self) -> None:
+        """Render a simple progress screen while image processing is running."""
         frame = tk.Frame(self.root, padx=20, pady=20)
         frame.pack(fill="both", expand=True)
 
@@ -461,6 +488,7 @@ class ImageClassifierApp:
         ).pack(expand=True)
 
     def go_back(self) -> None:
+        """Navigate to the previous step based on the current UI state."""
         if self.state == "enter_label":
             self.state = "select_images"
         elif self.state == "choose_placement":
@@ -471,8 +499,9 @@ class ImageClassifierApp:
 
 
 def main() -> None:
+    """Create the Tkinter root window and start the application loop."""
     root = tk.Tk()
-    app = ImageClassifierApp(root)
+    ImageClassifierApp(root)
     root.mainloop()
 
 
