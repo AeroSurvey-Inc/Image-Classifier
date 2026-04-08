@@ -18,7 +18,7 @@ Interactive desktop tool that labels images based on user prompts.
 
 ## Setup
 
-### Option 1: Run with Python (requires Python 3.13+)
+### Option 1: Run with Python (requires [uv](https://docs.astral.sh/uv/#installation))
 
 ```powershell
 uv sync
@@ -35,8 +35,6 @@ This script will:
 - Install all project dependencies
 - Add PyInstaller to the dev dependencies
 - Build a standalone `ImageClassifier.exe` in the `dist/` folder
-
-The exe can be shared and run on any Windows machine without requiring Python or any other dependencies.
 
 ## Run
 
