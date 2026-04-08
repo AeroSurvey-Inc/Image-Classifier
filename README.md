@@ -36,6 +36,14 @@ This script will:
 - Add PyInstaller to the dev dependencies
 - Build a standalone `ImageClassifier.exe` in the `dist/` folder
 
+If you get an error message saying the execution policy doesn't allow you to run the script, you'll need to 
+to run a command to modify the execution policy. The following command will temporarily bypass the policy
+to allow you to run the script:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force   
+```
+
 ## Run
 
 ### From source (with Python):
