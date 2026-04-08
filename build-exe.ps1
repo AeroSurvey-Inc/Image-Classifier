@@ -94,7 +94,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('aerosurvey-mark-8-icon.ico', '.')],
     hiddenimports=['PIL'],
     hookspath=[],
     hooksconfig={},
@@ -128,7 +128,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='icon.ico' if __import__('pathlib').Path('icon.ico').exists() else None,
+    icon='aerosurvey-mark-8-icon.ico' if __import__('pathlib').Path('aerosurvey-mark-8-icon.ico').exists() else None,
 )
 '@
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox
@@ -16,6 +17,23 @@ SUPPORTED_EXTENSIONS = {
     ".tiff",
     ".webp",
 }
+
+PRESET_LABELS = [
+    "CUI",
+    "FOUO PROPRIETARY",
+    "PROPRIETARY",
+    "UNCLASSIFIED",
+    "UNCLASSIFIED FOUO",
+    "UNCLASSIFIED PROPRIETARY",
+]
+
+APP_ICON_FILE = "aerosurvey-mark-8-icon.ico"
+
+
+def resource_path(relative_name: str) -> Path:
+    if hasattr(sys, "_MEIPASS"):
+        return Path(sys._MEIPASS) / relative_name
+    return Path(__file__).resolve().parent / relative_name
 
 
 def load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -157,8 +175,15 @@ class ImageClassifierApp:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Image Classifier Tool")
-        self.root.geometry("500x400")
+        self.root.geometry("520x520")
         self.root.resizable(False, False)
+
+        icon_path = resource_path(APP_ICON_FILE)
+        if icon_path.exists():
+            try:
+                self.root.iconbitmap(default=str(icon_path))
+            except tk.TclError:
+                pass
 
         self.image_paths: list[Path] = []
         self.label_text: str = ""
@@ -248,10 +273,33 @@ class ImageClassifierApp:
             font=("Arial", 14, "bold"),
         ).pack(anchor="w", pady=(0, 16))
 
+        tk.Label(frame, text="Preset labels:").pack(anchor="w")
+
+        preset_frame = tk.Frame(frame)
+        preset_frame.pack(fill="x", pady=(4, 12))
+
         tk.Label(frame, text="Label:").pack(anchor="w")
         entry = tk.Entry(frame, font=("Arial", 12), width=40)
         entry.pack(fill="x", pady=(4, 16))
+        if self.label_text:
+            entry.insert(0, self.label_text)
         entry.focus()
+
+        def use_preset(label: str) -> None:
+            entry.delete(0, tk.END)
+            entry.insert(0, label)
+            entry.focus()
+
+        for index, label in enumerate(PRESET_LABELS):
+            tk.Button(
+                preset_frame,
+                text=label,
+                width=24,
+                command=lambda value=label: use_preset(value),
+            ).grid(row=index // 2, column=index % 2, padx=4, pady=4, sticky="ew")
+
+        preset_frame.grid_columnconfigure(0, weight=1)
+        preset_frame.grid_columnconfigure(1, weight=1)
 
         def on_next() -> None:
             text = entry.get().strip()
