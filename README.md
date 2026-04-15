@@ -6,6 +6,9 @@ Interactive desktop tool that labels images based on user prompts.
 
 - Select individual image files or a folder of images.
 - Enter a classification label
+- Optionally add a timestamp after the classifier label is applied.
+- Use the image EXIF timestamp or type a manual timestamp.
+- Choose whether the timestamp is overlaid on the image or appended below it.
 - Select an output folder for labeled images.
 - Choose one of four placement modes:
   - Overlay at top
@@ -15,6 +18,7 @@ Interactive desktop tool that labels images based on user prompts.
 - Text size scales with image size.
 - Overlay text color is auto-selected for contrast against the local background.
 - Appended labels use black text on a white background.
+- Timestamp overlays are automatically placed in a corner that avoids the classifier label area.
 
 ## Setup
 
