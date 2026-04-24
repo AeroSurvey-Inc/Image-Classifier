@@ -1,5 +1,7 @@
 # Image Classifier Tool
 
+[![Latest Release](https://img.shields.io/github/v/release/AeroSurvey-Inc/Image-Classifier)](https://github.com/AeroSurvey-Inc/Image-Classifier/releases/latest)
+
 Interactive desktop tool that labels images based on user prompts.
 
 ## Features
@@ -22,31 +24,22 @@ Interactive desktop tool that labels images based on user prompts.
 
 ## Setup
 
-### Option 1: Run with Python (requires [uv](https://docs.astral.sh/uv/#installation))
+### Run with Python (requires [uv](https://docs.astral.sh/uv/#installation))
 
 ```powershell
 uv sync
 ```
 
-### Option 2: Build a standalone EXE (no dependencies required)
+## Build
+
+Requires [uv](https://docs.astral.sh/uv/#installation). PyInstaller is included as a dev dependency.
 
 ```powershell
-.\build-exe.ps1
+uv sync
+uv run pyinstaller --onefile --windowed --name ImageClassifier --icon aerosurvey-mark-8-icon.ico main.py
 ```
 
-This script will:
-- Check and install `uv` if needed
-- Install all project dependencies
-- Add PyInstaller to the dev dependencies
-- Build a standalone `ImageClassifier.exe` in the `dist/` folder
-
-If you get an error message saying the execution policy doesn't allow you to run the script, you'll need to 
-to run a command to modify the execution policy. The following command will temporarily bypass the policy
-to allow you to run the script:
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force   
-```
+The output executable will be at `dist\ImageClassifier.exe`. It can be run on any Windows machine without Python installed.
 
 ## Run
 
