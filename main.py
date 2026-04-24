@@ -26,7 +26,7 @@ PRESET_LABELS = [
     "FOUO PROPRIETARY",
     "PROPRIETARY",
     "UNCLASSIFIED",
-    "UNCLASSIFIED FOUO",
+    "UNCLASSIFIED//FOUO",
     "UNCLASSIFIED PROPRIETARY",
 ]
 
@@ -660,14 +660,22 @@ class ImageClassifierApp:
 
         tk.Label(frame, text="Preset labels:").pack(anchor="w")
 
-        preset_frame = tk.Frame(frame)
-        preset_frame.pack(fill="x", pady=(4, 12))
+        preset_var = tk.StringVar(value="Select a preset label")
+        preset_menu = tk.OptionMenu(
+            frame,
+            preset_var,
+            "Select a preset label",
+            *PRESET_LABELS,
+        )
+        preset_menu.pack(fill="x", pady=(4, 12))
 
         tk.Label(frame, text="Label:").pack(anchor="w")
         entry = tk.Entry(frame, font=("Arial", 12), width=40)
         entry.pack(fill="x", pady=(4, 16))
         if self.label_text:
             entry.insert(0, self.label_text)
+            if self.label_text in PRESET_LABELS:
+                preset_var.set(self.label_text)
         entry.focus()
 
         def use_preset(label: str) -> None:
@@ -683,16 +691,17 @@ class ImageClassifierApp:
             entry.insert(0, label)
             entry.focus()
 
-        for index, label in enumerate(PRESET_LABELS):
-            tk.Button(
-                preset_frame,
-                text=label,
-                width=24,
-                command=lambda value=label: use_preset(value),
-            ).grid(row=index // 2, column=index % 2, padx=4, pady=4, sticky="ew")
+        def on_preset_selected(*_: object) -> None:
+            """Apply the selected preset label to the entry field.
 
-        preset_frame.grid_columnconfigure(0, weight=1)
-        preset_frame.grid_columnconfigure(1, weight=1)
+            Returns:
+                None.
+            """
+            selected = preset_var.get()
+            if selected in PRESET_LABELS:
+                use_preset(selected)
+
+        preset_var.trace_add("write", on_preset_selected)
 
         def on_next() -> None:
             """Validate the label and advance to placement selection.
