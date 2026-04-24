@@ -1,6 +1,6 @@
 [project]
 name = "image-classifier-tool"
-version = "0.1.0"
+version = "1.0.0"
 description = "Interactive image labeling tool with overlay or append placement"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -20,6 +20,4 @@ package = true
 py-modules = ["main"]
 
 [dependency-groups]
-dev = [
-    "pyinstaller>=6.19.0",
-]
+dev = ["pyinstaller>=6.19.0"]
