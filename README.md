@@ -36,7 +36,10 @@ Requires [uv](https://docs.astral.sh/uv/#installation). PyInstaller is included 
 
 ```powershell
 uv sync
-uv run pyinstaller --onefile --windowed --name ImageClassifier --icon aerosurvey-mark-8-icon.ico main.py
+```
+
+```powershell
+uv run pyinstaller --onefile --windowed --name ImageClassifier --icon aerosurvey-mark-8-icon.ico --add-data "pyproject.toml;." main.py
 ```
 
 The output executable will be at `dist\ImageClassifier.exe`. It can be run on any Windows machine without Python installed.
