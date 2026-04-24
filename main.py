@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 import tkinter as tk
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 from tkinter import filedialog, messagebox
@@ -60,6 +61,26 @@ def resource_path(relative_name: str) -> Path:
     if hasattr(sys, "_MEIPASS"):
         return Path(sys._MEIPASS) / relative_name
     return Path(__file__).resolve().parent / relative_name
+
+
+def get_project_version() -> str:
+    """Read the application version from pyproject.toml.
+
+    Returns:
+        Project version string, or "unknown" when unavailable.
+    """
+    pyproject_path = Path(__file__).resolve().parent / "pyproject.toml"
+    try:
+        with pyproject_path.open("rb") as pyproject_file:
+            pyproject_data = tomllib.load(pyproject_file)
+    except (OSError, tomllib.TOMLDecodeError):
+        return "unknown"
+
+    project_data = pyproject_data.get("project", {})
+    version = project_data.get("version")
+    if isinstance(version, str) and version.strip():
+        return version.strip()
+    return "unknown"
 
 
 def load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -526,7 +547,7 @@ class ImageClassifierApp:
             None.
         """
         self.root = root
-        self.root.title("Image Classifier Tool")
+        self.root.title(f"Image Classifier Tool v{get_project_version()}")
         self.root.geometry("560x640")
         self.root.resizable(False, False)
 
